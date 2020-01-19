@@ -1,7 +1,7 @@
 AC_PREREQ([2.64])
 
 m4_define([wayland_major_version],  [1])
-m4_define([wayland_minor_version], [14])
+m4_define([wayland_minor_version], [15])
 m4_define([wayland_micro_version],  [0])
 m4_define([wayland_version],
           [wayland_major_version.wayland_minor_version.wayland_micro_version])
@@ -29,6 +29,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_GREP
 AM_PROG_AS
+AC_PROG_NM
 
 # check if we have C++ compiler. This is hacky workaround,
 # for a reason why it is this way see
@@ -43,7 +44,7 @@ AM_CONDITIONAL(ENABLE_CPP_TEST, test "x$have_cpp_compiler" = "xyes")
 
 # Initialize libtool
 LT_PREREQ([2.2])
-LT_INIT
+LT_INIT([disable-static])
 
 PKG_PROG_PKG_CONFIG()
 
@@ -61,7 +62,8 @@ if test "x$GCC" = "xyes"; then
 fi
 AC_SUBST(GCC_CFLAGS)
 
-AC_CHECK_FUNCS([accept4 mkostemp posix_fallocate])
+AC_CHECK_HEADERS([sys/prctl.h])
+AC_CHECK_FUNCS([accept4 mkostemp posix_fallocate prctl])
 
 AC_ARG_ENABLE([libraries],
 	      [AC_HELP_STRING([--disable-libraries],
@@ -193,6 +195,8 @@ AC_CONFIG_FILES([Makefile
 		 doc/publican/Makefile
 		 doc/doxygen/Makefile
 		 doc/man/Makefile
+		 egl/wayland-egl.pc
+		 egl/wayland-egl-backend.pc
 		 src/wayland-server-uninstalled.pc
 		 src/wayland-client-uninstalled.pc
 		 src/wayland-scanner-uninstalled.pc

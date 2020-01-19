@@ -1,13 +1,11 @@
 Name:           wayland
-Version:        1.14.0
-Release:        2%{?dist}
+Version:        1.15.0
+Release:        1%{?dist}
 Summary:        Wayland Compositor Infrastructure
 
 License:        MIT
 URL:            http://wayland.freedesktop.org/
 Source0:        http://wayland.freedesktop.org/releases/%{name}-%{version}.tar.xz
-
-Patch1: 0001-cursor-Fix-heap-overflows-when-parsing-malicious-fil.patch
 
 BuildRequires:  chrpath
 BuildRequires:  docbook-style-xsl
@@ -30,6 +28,7 @@ applications, X servers (rootless or fullscreen) or other display servers.
 Summary:        Development files for %{name}
 Requires:       libwayland-client%{?_isa} = %{version}-%{release}
 Requires:       libwayland-cursor%{?_isa} = %{version}-%{release}
+Requires:       libwayland-egl%{?_isa} = %{version}-%{release}
 Requires:       libwayland-server%{?_isa} = %{version}-%{release}
 # For upgrade path from F24
 Provides:       libwayland-client-devel = %{version}-%{release}
@@ -38,6 +37,11 @@ Provides:       libwayland-cursor-devel = %{version}-%{release}
 Obsoletes:      libwayland-cursor-devel < 1.11.91
 Provides:       libwayland-server-devel = %{version}-%{release}
 Obsoletes:      libwayland-server-devel < 1.11.91
+# For upgrade path from F27
+Provides:       libwayland-egl-devel = %{version}-%{release}
+Provides:       mesa-libwayland-egl-devel = %{version}-%{release}
+Provides:       mesa-libwayland-egl-devel%{?_isa} = %{version}-%{release}
+Obsoletes:      mesa-libwayland-egl-devel < 18.1.0
 
 %description    devel
 The %{name}-devel package contains libraries and header files for
@@ -46,8 +50,6 @@ developing applications that use %{name}.
 %package doc
 Summary: Wayland development documentation
 BuildArch: noarch
-# For upgrade path from F22
-Obsoletes: wayland < 1.8.91
 %description doc
 Wayland development documentation
 
@@ -58,24 +60,30 @@ Wayland client library
 
 %package -n libwayland-cursor
 Summary: Wayland cursor library
-Requires: libwayland-client%{?_isa} = %{version}-%{release}
 %description -n libwayland-cursor
 Wayland cursor library
+
+%package -n libwayland-egl
+Summary: Wayland egl library
+# For upgrade path from F27
+Provides:       mesa-libwayland-egl = %{version}-%{release}
+Provides:       mesa-libwayland-egl%{?_isa} = %{version}-%{release}
+Obsoletes:      mesa-libwayland-egl < 18.1.0
+
+%description -n libwayland-egl
+Wayland egl library
 
 %package -n libwayland-server
 Summary: Wayland server library
 %description -n libwayland-server
 Wayland server library
 
-
 %prep
-%setup -q
-%patch1 -p1 -b .xcursor
+%autosetup -p1
 
 %build
 %configure --disable-static --enable-documentation
 make %{?_smp_mflags}
-
 
 %install
 %make_install
@@ -96,6 +104,9 @@ XDG_RUNTIME_DIR=$PWD/tests/run make check || \
 
 %post -n libwayland-cursor -p /sbin/ldconfig
 %postun -n libwayland-cursor -p /sbin/ldconfig
+
+%post -n libwayland-egl -p /sbin/ldconfig
+%postun -n libwayland-egl -p /sbin/ldconfig
 
 %post -n libwayland-server -p /sbin/ldconfig
 %postun -n libwayland-server -p /sbin/ldconfig
@@ -125,11 +136,19 @@ XDG_RUNTIME_DIR=$PWD/tests/run make check || \
 %license COPYING
 %{_libdir}/libwayland-cursor.so.0*
 
+%files -n libwayland-egl
+%license COPYING
+%{_libdir}/libwayland-egl.so.1*
+
 %files -n libwayland-server
 %license COPYING
 %{_libdir}/libwayland-server.so.0*
 
 %changelog
+* Mon Apr 09 2018 Kalev Lember <klember@redhat.com> - 1.15.0-1
+- Update to 1.15.0
+- Resolves: #1576489
+
 * Wed Nov 29 2017 Olivier Fourdan <ofourdan@redhat.com> - 1.14.0-2
 - Add libwayland-cursor heap overflow fix (#1518615)
 
